@@ -23,6 +23,8 @@
 #include <semaphore.h>
 #include <fcntl.h>
 
+#define SEM_NAME "/semaphore"
+
 // Structures
 // Process Control Block
 typedef struct {
