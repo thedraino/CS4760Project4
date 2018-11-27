@@ -29,12 +29,14 @@ void cleanUpResources();
 
 /* Global Variables */
 //Constants
-
+const int maxCurrentProcesses = 18;	// Controls how many child processes are allowed to be alive at the same time
+const int maxTotalProcesses = 100; 	// Controls how many child processes are allowed to be created in total
+const int killTimer = 2; 		// Controls the amount of seconds the program can be running
 
 // Logfile Information 
 FILE *fp;
-char filename[12] = "program.log";
-int numberOFLines; 
+char filename[12] = "program.log";	// Name of the the log file that will be written to throughout the life of the program
+int numberOFLines; 			// Counter to track the size of the logfile (limited to 10,000 lines)
 
 
 /*************************************************************************************************************/
@@ -42,9 +44,9 @@ int numberOFLines;
 /*************************************************************************************************************/
 
 int main ( int argc, int *argv[] ) {
-    printf ( "Hello, from oss.\n" );
+	printf ( "Hello, from oss.\n" );
   
-    return 0;
+	return 0;
 }
 
 /***************************************************************************************************************/
