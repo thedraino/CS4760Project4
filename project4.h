@@ -25,25 +25,22 @@
 /* Structures */
 // Process Control Block
 typedef struct {
-    int pcb_TotalCPUTimeUsed;
-    int pcb_TotalTimeInSystem;
-    int pcb_TimeUsedLastBurst;
-    int pcb_Priority;
-    int pcb_ProcessID;
-    int pcb_Index; 
-    unsigned int pcb_ArrivalTime[2];
-    bool pcb_Terminated;
+    int pcb_Index; 						// Index to in PCB associated with a specific process
+	int pcb_ProcessID;					// Stores process's unique pid
+	int pcb_Priority;					// Stores the priority assigned by OSS upon creation
+	int pcb_TotalCPUTimeUsed;			// Running counter of time when process was running after being scheduled
+    int pcb_TotalTimeInSystem;			// Running counter of time when process was alive
+    int pcb_TimeUsedLastBurst;			// Temporary tracker or most recent amount of time spent running
+    bool pcb_Terminated;				// Flag to indicate if the process has terminated or not
 } ProcessControlBlock;
 
 // Structure used in the message queue 
 typedef struct {
 	long msg_type;		// Control what process can receive the message.
-	int pid;		    // Store the sending process's pid.
-	int address;		// Store the address location the process is requesting in memory. 
-	bool read;		    // Flag is set to true if memory reference is read from memory. 
-	bool write;		    // Flag is set to fales if memory reference is a write to memory. 
-	bool terminate;		// Default is false. Gets changed to true when child terminates. 
-	bool suspended;		// Default is false. Will be changed if indicated upon receiving a message from OSS. 
+	int pid;			// Store the sending process's pid.
+	int pcbIndex;		// Store the sending process's index in the process control block.
+	int bitVectorIndex;	// Store the child process's bit vector index 
+	bool terminated;	// Flag to indicate that the process was able to terminate. 
 } Message;
 
 /* Function prototypes */
