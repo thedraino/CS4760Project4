@@ -56,6 +56,45 @@ int main ( int argc, int *argv[] ) {
 
 /* Function Definitions */
 
+// Function for signal handling.
+// Handles ctrl-c from keyboard or eclipsing 2 real life seconds in run-time.
+void sig_handle ( int sig_num ) {
+	if ( sig_num == SIGINT || sig_num == SIGALRM ) {
+		printf ( "Signal to terminate was received.\n" );
+		cleanUpResources();
+		kill ( 0, SIGKILL );
+		wait ( NULL );
+		exit ( 0 );
+	}
+}
+
+// Function that increments the clock by some amount of time at different points. 
+// Also makes sure that nanoseconds are converted to seconds when appropriate.
+void incrementClock ( unsigned int clock[] ) {
+	int processingTime = 10000; // Can be changed to adjust how much the clock is incremented.
+	clock[1] += processingTime;
+
+	clock[0] += shmClock[1] / 1000000000;
+	clock[1] = shmClock[1] % 1000000000;
+}
+
+// Function to terminate all shared memory and message queue up completion or to work with signal handling
+/*void cleanUpResources() {
+	// Close the file
+	fclose ( fp );
+	
+	// Detach from shared memory
+	shmdt ( shmClock );
+	shmdt ( shmBlocked );
+
+	// Destroy shared memory
+	shmctl ( shmClockID, IPC_RMID, NULL );
+	shmctl ( shmBlockedID, IPC_RMID, NULL );
+	
+	// Destroy message queue
+	msgctl ( messageID, IPC_RMID, NULL );
+}*/
+
 // Note: Queue code is gotten from https://www.geeksforgeeks.org/queue-set-1introduction-and-array-implementation/
 
 // Function to create a queue of given capacity.
