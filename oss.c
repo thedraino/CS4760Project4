@@ -3,8 +3,6 @@
 
 // Master process to simulate the OSS scheduler
 
-// Note: Queue code is gotten from https://www.geeksforgeeks.org/queue-set-1introduction-and-array-implementation/
-
 #include "project4.h"
 
 /* Structures */
@@ -13,10 +11,10 @@ typedef struct {
 	int front, rear, size;
 	unsigned capacity;
 	int *array;  
-	int pid;
 } Queue;
                    
 /* Function Prototypes */
+// Queue functions
 Queue* createQueue ( unsigned capacity );
 int isFull ( Queue* queue ); 
 int isEmpty ( Queue* queue );
@@ -24,6 +22,10 @@ void enqueue ( Queue* queue, int item );
 int dequeue ( Queue* queue );
 int front ( Queue* queue );
 int rear ( Queue* queue );
+
+// Other functions
+void incrementClock ( unsigned int clock[] );
+void cleanUpResources();
 
 /*************************************************************************************************************/
 /******************************************* Start of Main Function ******************************************/
@@ -40,6 +42,9 @@ int main ( int argc, int *argv[] ) {
 /***************************************************************************************************************/
 
 /* Function Definitions */
+
+// Note: Queue code is gotten from https://www.geeksforgeeks.org/queue-set-1introduction-and-array-implementation/
+
 // Function to create a queue of given capacity.
 // It initializes size of queue as 0.
 Queue* createQueue ( unsigned capacity ) {
