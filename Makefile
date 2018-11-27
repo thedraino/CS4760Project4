@@ -3,8 +3,8 @@ CC      = gcc
 CFLAGS  = -g -lrt
 TARGET1 = oss
 TARGET2 = user
-OBJS1   = oss.o oss.h
-OBJS2   = user.o oss.h
+OBJS1   = oss.o project4.h
+OBJS2   = user.o project4.h
 
 .SUFFIXES: .c .o
 
