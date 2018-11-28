@@ -51,15 +51,15 @@ int main ( int argc, int *argv[] ) {
 	int totalProcessesCreated = 0;	// Counter variable to track how many total processes have been created.
 	int ossPid = getpid();		// Hold the pid for OSS 
 	pid_t childPid;			// Hold the pid for child process during process creation phase.
-	bool keepWriting = true;	// Variable to control when writing to the file should cease based on the 
-					//	number of lines.
+	
 	srand ( time ( NULL ) );	// Seed for OSS to generate random numbers when necessary.
 	
 	/* Output file info */
 	char logName[12] = "program.log";	// Name of the the log file that will be written to throughout the life of the program.
 	int numberOFLines = 0; 			// Counter to track the size of the logfile (limited to 10,000 lines).
 	fp = fopen ( logName, "w+" );		// Opens file for writing. Logfile will be overwritten after each run. 
-	fprintf ( fp, "Testing...\n" );
+	bool keepWriting = true;		// Variable to control when writing to the file should cease based on the 
+						//	number of lines.
 	
 	/* Signal Handling */
 	// Set the alarm
@@ -140,11 +140,15 @@ int main ( int argc, int *argv[] ) {
 	
 	/****** Main Loop ******/
 	// Loop will run until the maxTotalProcesses limit has been reached. 
-	/*while ( totalProcessesCreated < maxTotalProcesses ) {
+	while ( totalProcessesCreated < maxTotalProcesses ) {
+		
+		// Check to see if the logfile has reached its line limit. If so, set the flag to false so that no 
+		//	more file writes occur. 
+		if ( numberOfLines >= 10000 ) 
+			keepWriting = false;
 		
 		
-		
-	} */// End of Main Loop
+	} // End of Main Loop
 	
 	/* Detach from and delete shared memory segments. Delete message queue. Close the outfile. */
 	cleanUpResources();
