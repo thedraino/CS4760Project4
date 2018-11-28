@@ -70,9 +70,37 @@ int main ( int argc, int *argv[] ) {
 	}
 
 	/* Shared Memory */
-	// Created of shared memory for simulated system clock and process control block 
-	if ( ( shmClockID = 
+	// Creation of shared memory for simulated system clock
+	if ( ( shmClockID = shmget ( shmClockKey, ( 2 * ( sizeof ( unsigned int ) ) ), IPC_CREAT | 0666 ) ) == -1 ) {
+		perror ( "OSS: Failure to create shared memory space for simulated system clock." );
+		return 1;
+	}
 	
+	// Creation of shared memory for process control block
+	if ( ( shmPCBID = sgmget ( shmPCBKey, ( 18 * ( sizeof ( ProcessControlBlock ) ) ), IPC_CREAT | 0666 ) ) == -1 ) {
+		perror ( "OSS: Failure to create shared memory space for Process Control Block." );
+		return 1;
+	}
+	
+	// Attach to and initialize shared memory for simulated system clock
+	if ( ( shmClock = (unsigned int *) shmat ( shmClockID, NULL, 0 ) ) == -1 ) {
+		perror ( "OSS: Failure to attach to shared memory space for simulated system clock." );
+		return 1; 
+	}
+	shmClock[0] = 0;	// Will hold the seconds value for the simulated system clock
+	shmClock[1] = 0;	// Will hold the nanoseconds value for the simulated system clock
+	
+	// Attach to shared memory for Process Control Block 
+	if ( ( shmPCB = (ProcessControlBlock *) shmat ( shmPCBID, NULL, 0 ) ) == -1 ) {
+		perror ( "OSS: Failure to attach to shared memory space for Process Control Block." );
+		return 1;
+	}
+	
+	/* Message Queue */
+	if ( ( messageID = msgget ( messageKey, IPC_CREAT | 0666 ) ) == -1 ) {
+		perror ( "OSS: Failure to create the message queue." );
+		return 1; 
+	}
 	
 	return 0;
 }
