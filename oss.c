@@ -51,7 +51,7 @@ int main ( int argc, int *argv[] ) {
 	int i, j;			// Index variables for loop control throughout the program.
 	int totalProcessesCreated = 0;	// Counter variable to track how many total processes have been created.
 	int ossPid = getpid();		// Hold the pid for OSS 
-	pid_t childPid;			// Hold the pid for child process during process creation phase.
+	pid_t pid;
 	
 	srand ( time ( NULL ) );	// Seed for OSS to generate random numbers when necessary.
 	
@@ -97,11 +97,15 @@ int main ( int argc, int *argv[] ) {
 	shmClock[0] = 0;	// Will hold the seconds value for the simulated system clock
 	shmClock[1] = 0;	// Will hold the nanoseconds value for the simulated system clock
 	
-	// Attach to shared memory for Process Control Block 
+	// Attach to shared memory for Process Control Block. Initialize the index value of each portion of the block.
 	if ( ( shmPCB = (ProcessControlBlock *) shmat ( shmPCBID, NULL, 0 ) ) < 0 ) {
 		perror ( "OSS: Failure to attach to shared memory space for Process Control Block." );
 		return 1;
 	}
+	for ( i = 0; i < maxCurrentProcesses; ++i ) {
+		shmPCB[i].pcb_Index = i;
+	}
+	
 	
 	/* Message Queue */
 	if ( ( messageID = msgget ( messageKey, IPC_CREAT | 0666 ) ) == -1 ) {
@@ -135,6 +139,7 @@ int main ( int argc, int *argv[] ) {
 	
 	// Other random variables that are only used in the main loop 
 	int processPriority;		// Will store the 0 or 1 (RNG) that will be assigned to each created process.
+	int rngPriority;		// Will stored the randomly generated number to control 
 	int tempBitVectorIndex = 0;	// Will store the current open index in the bit vector to be assigned to a new process.
 	bool createProcess;		// Flag to control when the process creation logic is entered. 
 	
@@ -157,11 +162,67 @@ int main ( int argc, int *argv[] ) {
 		if ( timeForNewProcess ( shmClock, nextProcessTimer ) && roomForProcess ( bitVector ) ) {
 			createProcess = true;
 			rngTimer = ( rand() % ( 2 - 0 + `1 ) ) + 0; 
-			nextProcessTimer = shmClock[0] + rngTimer; 
+			nextProcessTimer = rngTimer; 
 		}
 		
+		/* Process Creation */
+		// If the createProcess flag is set to true, OSS enters these branches first to create the new process
+		//	before it goes on to schedule anything. 
+		if ( createProcess ) {
+			tempBitVectorIndex = findIndex ( bitVector );
+			pid = fork();
+			
+			// Check for failure to fork child process.
+			if ( pid < 0 ) {
+				perror ( "OSS: Failure to fork child process." );
+				kill ( getpid(), SIGINT );
+			}
+			
+			// In the child process...
+			if ( pid == 0 ) {
+				// Store child's pid in the associated index of the bit vector
+				bitVector[tempBitVectorIndex] = getpid();
+				
+				// To pass the index to the child process with exec, must first convert to string. 
+				char intBuffer[3];
+				sprintf ( intBuffer, "%d", tempBitVectorIndex );
+				
+				fprintf ( fp, "OSS: Process % created at %d:%d. Stored in Index %d.\n", 
+					 getpid(), shmClock[0], shmClock[1], tempBitVectorIndex );
+				numberOfLines++; 
+				
+				execl ( "./user", "user", intBuffer, NULL );
+			} // End of child process logic
+			
+			// In the parent process...
+			// Set the priority for newly created process.
+			rngPriority = ( rand() % ( 100 - 1 + 1 ) ) + 1;
+			if ( rngPriority >= 1 || rngPriority < 25 ) {
+				processPriority = 1;	// High priority
+			} else {
+				processPriority = 0; 	// Low priority
+			}
+			
+			// Fill in process control block info for child process to see. 
+			shmPCB[tempBitVectorIndex].pcb_ProcessID = pid; 
+			shmPCB[tempBitVectorIndex].pcb_Priority = processPriority;
+			shmPCB[tempBitVectorIndex].pcb_TotalCPUTimeUsed = 0;
+			shmPCB[tempBitVectorIndex].pcb_TotalTimeInSystem = 0;
+			shmPCB[tempBitVectorIndex].pcb_TimeUsedLastBurst = 0;
+			shmPCB[tempBitVectorIndex].pcb_Terminated = false;
+			
+			// Put the child process's pid the appropriate queue.
+			if ( processPriority == 0 ) {
+				enqueue ( lowPriorityQueue, pid );
+			}
+			if ( processPriority == 1 ) {
+				enqueue ( highPriorityQueue, pid ;
+			}
+		} // End of Create Process Logic
 		
-		
+		/* Scheduling */
+					 
+					 
 	} // End of Main Loop
 	
 	/* Detach from and delete shared memory segments. Delete message queue. Close the outfile. */
@@ -210,7 +271,7 @@ int findIndex ( int arr[] ) {
 	size = sizeof ( arr );
 	for ( i = 0; i < size; ++i ) {
 		if ( arr[i] != 0 ) {
-			index = arr[i];
+			index = i;
 			break;
 		}
 	}
