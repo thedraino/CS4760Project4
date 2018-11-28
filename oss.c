@@ -26,7 +26,7 @@ int rear ( Queue* queue );
 // Other functions
 bool roomForProcess ( int arr[] );
 int findIndex ( int arr[] );
-bool timeForNewProcess ( unsigned int systemClock[], unsigned int nextProcessClock[] );
+bool timeForNewProcess ( unsigned int systemClock[], unsigned int nextProcessTimer );
 void incrementClock ( unsigned int clock[] );
 void cleanUpResources();
 
@@ -51,7 +51,7 @@ int main ( int argc, int *argv[] ) {
 	int i, j;			// Index variables for loop control throughout the program.
 	int totalProcessesCreated = 0;	// Counter variable to track how many total processes have been created.
 	int ossPid = getpid();		// Hold the pid for OSS 
-	pid_t childPid;			// Hold the pid for child process during process creation phase.
+	pid_t pid;
 	
 	srand ( time ( NULL ) );	// Seed for OSS to generate random numbers when necessary.
 	
@@ -97,11 +97,15 @@ int main ( int argc, int *argv[] ) {
 	shmClock[0] = 0;	// Will hold the seconds value for the simulated system clock
 	shmClock[1] = 0;	// Will hold the nanoseconds value for the simulated system clock
 	
-	// Attach to shared memory for Process Control Block 
+	// Attach to shared memory for Process Control Block. Initialize the index value of each portion of the block.
 	if ( ( shmPCB = (ProcessControlBlock *) shmat ( shmPCBID, NULL, 0 ) ) < 0 ) {
 		perror ( "OSS: Failure to attach to shared memory space for Process Control Block." );
 		return 1;
 	}
+	for ( i = 0; i < maxCurrentProcesses; ++i ) {
+		shmPCB[i].pcb_Index = i;
+	}
+	
 	
 	/* Message Queue */
 	if ( ( messageID = msgget ( messageKey, IPC_CREAT | 0666 ) ) == -1 ) {
@@ -120,12 +124,11 @@ int main ( int argc, int *argv[] ) {
 		bitVector[i] = 0;
 	}
 	
-	// Set up clock to determine when new child processes should be created. Set at 0 by default so that 
+	// Set up timer to determine when new child processes should be created. Set at 0 by default so that 
 	//	a child process is created immediately. Value will then be increment by some random amount to 
 	//	indicate the next time after which a new child process should be created (if the bit vector allows).
-	unsigned int nextProcessTimer[2]; 
-	nextProcessTimer[0] = 0;
-	nextProcessTimer[1] = 0;
+	unsigned int nextProcessTimer = 0;
+	int rngTimer; 
 	
 	// Set up of two round robin queues. As their names imply, one queue will be for high priority processes
 	//	and another will be for low priority processes. Each will be the same size to account for bad RNG
@@ -136,8 +139,10 @@ int main ( int argc, int *argv[] ) {
 	
 	// Other random variables that are only used in the main loop 
 	int processPriority;		// Will store the 0 or 1 (RNG) that will be assigned to each created process.
+	int rngPriority;		// Will stored the randomly generated number to control 
 	int tempBitVectorIndex = 0;	// Will store the current open index in the bit vector to be assigned to a new process.
 	bool createProcess;		// Flag to control when the process creation logic is entered. 
+	int randOverhead;		
 	
 	/****** Main Loop ******/
 	// Loop will run until the maxTotalProcesses limit has been reached. 
@@ -145,11 +150,88 @@ int main ( int argc, int *argv[] ) {
 		
 		// Check to see if the logfile has reached its line limit. If so, set the flag to false so that no 
 		//	more file writes occur. 
-		if ( numberOfLines >= 10000 ) 
+		if ( numberOfLines >= 10000 ) {
 			keepWriting = false;
+		}
 		
 		// Set the createProcess flag to false as the default each run through the main loop. 
 		createProcess = false;
+		
+		// Check to see if the simulated system clock has passed the time for the next process to be created and
+		//	if there is room for a new process at this time. If both are true, change createProcess flag to 
+		//	true. Then set a new time for the next process to be created. 
+		if ( timeForNewProcess ( shmClock, nextProcessTimer ) && roomForProcess ( bitVector ) ) {
+			createProcess = true;
+			rngTimer = ( rand() % ( 2 - 0 + `1 ) ) + 0; 
+			nextProcessTimer = rngTimer; 
+		}
+		
+		/* Process Creation */
+		// If the createProcess flag is set to true, OSS enters these branches first to create the new process
+		//	before it goes on to schedule anything. 
+		if ( createProcess ) {
+			tempBitVectorIndex = findIndex ( bitVector );
+			pid = fork();
+			
+			// Check for failure to fork child process.
+			if ( pid < 0 ) {
+				perror ( "OSS: Failure to fork child process." );
+				kill ( getpid(), SIGINT );
+			}
+			
+			// In the child process...
+			if ( pid == 0 ) {
+				// Store child's pid in the associated index of the bit vector
+				bitVector[tempBitVectorIndex] = getpid();
+				
+				// To pass the index to the child process with exec, must first convert to string. 
+				char intBuffer[3];
+				sprintf ( intBuffer, "%d", tempBitVectorIndex );
+				
+				execl ( "./user", "user", intBuffer, NULL );
+			} // End of child process logic
+			
+			// In the parent process...
+			// Set the priority for newly created process.
+			rngPriority = ( rand() % ( 100 - 1 + 1 ) ) + 1;
+			if ( rngPriority >= 1 || rngPriority < 25 ) {
+				processPriority = 1;	// High priority
+			} else {
+				processPriority = 0; 	// Low priority
+			}
+			
+			// Fill in process control block info for child process to see. 
+			shmPCB[tempBitVectorIndex].pcb_ProcessID = pid; 
+			shmPCB[tempBitVectorIndex].pcb_Priority = processPriority;
+			shmPCB[tempBitVectorIndex].pcb_TotalCPUTimeUsed = 0;
+			shmPCB[tempBitVectorIndex].pcb_TotalTimeInSystem = 0;
+			shmPCB[tempBitVectorIndex].pcb_TimeUsedLastBurst = 0;
+			shmPCB[tempBitVectorIndex].pcb_Terminated = false;
+			
+			// Put the child process's pid the appropriate queue.
+			if ( processPriority == 0 ) {
+				fprintf ( fp, "OSS: Generating process with PID %d (Low priority) and putting it in queue 0 at time %d:%d.\n", 
+					 pid, shmClock[0], shmClock[1] );
+				numberOfLines++;
+				enqueue ( lowPriorityQueue, pid );
+			}
+			if ( processPriority == 1 ) {
+				fprintf ( fp, "OSS: Generating process with PID %d (High priority) and putting it in queue 1 at time %d:%d.\n", 
+					 pid, shmClock[0], shmClock[1] );
+				numberOfLines++;
+				enqueue ( highPriorityQueue, pid ;
+			}
+		} // End of Create Process Logic
+		
+		/* Scheduling */
+					 
+		
+		// Increment clock 
+		randOverhead = ( rand() % ( 1000 - 0 + 1 ) ) + 0;
+		shmClock[0]++;
+		shmClock[1] += randOverhead;
+		shmClock[0] += shmClock[1] / 1000000000;
+		shmClock[1] = shmClock[1] % 1000000000;
 		
 	} // End of Main Loop
 	
@@ -185,8 +267,8 @@ bool roomForProcess ( int arr[] ) {
 // Function to compare the shared memory clock with the clock indicating when a new process should be created. 
 //	Returns true if system clock has reached or passed the indicated time by the new process clock. Returns
 //	false otherwise. 
-bool timeForNewProcess ( unsigned int systemClock[], unsigned int nextProcessClock[] ) {
-	if ( ( systemClock[0] >= nextProcessClock[0] ) && ( systemClock[1] >= nextProcessClock[1] ) ) {
+bool timeForNewProcess ( unsigned int systemClock[], unsigned int nextProcessTimer ) {
+	if ( systemClock[0] >= nextProcessTimer ) {
 		return true;
 	}
 	else
@@ -199,7 +281,7 @@ int findIndex ( int arr[] ) {
 	size = sizeof ( arr );
 	for ( i = 0; i < size; ++i ) {
 		if ( arr[i] != 0 ) {
-			index = arr[i];
+			index = i;
 			break;
 		}
 	}
