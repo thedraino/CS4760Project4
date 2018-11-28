@@ -93,8 +93,8 @@ int main ( int argc, int *argv[] ) {
 		perror ( "OSS: Failure to attach to shared memory space for simulated system clock." );
 		return 1; 
 	}
-	shmClock[0] = 0;	// Will hold the seconds value for the simulated system clock
-	shmClock[1] = 0;	// Will hold the nanoseconds value for the simulated system clock
+	shmClock[0] = 14;	// Will hold the seconds value for the simulated system clock
+	shmClock[1] = 1234;	// Will hold the nanoseconds value for the simulated system clock
 	
 	// Attach to shared memory for Process Control Block 
 	if ( ( shmPCB = (ProcessControlBlock *) shmat ( shmPCBID, NULL, 0 ) ) < 0 ) {
@@ -123,8 +123,8 @@ int main ( int argc, int *argv[] ) {
 	//	a child process is created immediately. Value will then be increment by some random amount to 
 	//	indicate the next time after which a new child process should be created (if the bit vector allows).
 	unsigned int nextProcessTimer[2]; 
-	nextProcessTimer[0] = 1;
-	nextProcessTimer[1] = 0;
+	nextProcessTimer[0] = 14;
+	nextProcessTimer[1] = 1234;
 	
 	// Set up of two round robin queues. As their names imply, one queue will be for high priority processes
 	//	and another will be for low priority processes. Each will be the same size to account for bad RNG
