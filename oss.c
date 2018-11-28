@@ -182,7 +182,7 @@ bool roomForProcess ( int arr[] ) {
 //	false otherwise. 
 bool timeForProcess ( unsigned int systemClock[], unsigned int nextProcessClock[] ) {
 	if ( ( systemClock[0] > nextProcessClock[0] && systemClock[1] <= nextProcessClock[1] ) 
-	    || ( systemClock[0] == nextProcessClock[0] && systemClock1] >= nextProcessClock[1] ) ) {
+	    || ( systemClock[0] == nextProcessClock[0] && systemClock[1] >= nextProcessClock[1] ) ) {
 		return true;
 	}
 	else
