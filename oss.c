@@ -25,7 +25,7 @@ int rear ( Queue* queue );
 
 // Other functions
 bool roomForProcess ( int arr[] );
-bool timeForProcess ( unsigned int systemClock[], nextProcessClock[] );
+bool timeForProcess ( unsigned int systemClock[], unsigned int nextProcessClock[] );
 void incrementClock ( unsigned int clock[] );
 void cleanUpResources();
 
@@ -137,7 +137,7 @@ int main ( int argc, int *argv[] ) {
 	int processPriority;		// Will store the 0 or 1 (RNG) that will be assigned to each created process.
 	int tempBitVectorIndex = 0;	// Will store the current open index in the bit vector to be assigned to a new process.
 	
-	if ( timeForProcess ( shmClock, nextProcessTimer ) {
+	if ( timeForProcess ( shmClock, nextProcessTimer ) )
 		printf ( "Time for a new processes\n." );
 	
 	/ ***** Main Loop ***** /
@@ -180,7 +180,7 @@ bool roomForProcess ( int arr[] ) {
 // Function to compare the shared memory clock with the clock indicating when a new process should be created. 
 //	Returns true if system clock has reached or passed the indicated time by the new process clock. Returns
 //	false otherwise. 
-bool timeForProcess ( unsigned int systemClock[], nextProcessClock[] ) {
+bool timeForProcess ( unsigned int systemClock[], unsigned int nextProcessClock[] ) {
 	if ( ( systemClock[0] > nextProcessClock[0] && systemClock[1] <= nextProcessClock[1] ) 
 	    || ( systemClock[0] == nextProcessClock[0] && systemClock1] >= nextProcessClock[1] ) ) {
 		return true;
