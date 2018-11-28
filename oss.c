@@ -212,15 +212,19 @@ int main ( int argc, int *argv[] ) {
 			
 			// Put the child process's pid the appropriate queue.
 			if ( processPriority == 0 ) {
-				fprintf ( fp, "OSS: Generating process with PID %d (Low priority) and putting it in queue 0 at time %d:%d.\n", 
-					 pid, shmClock[0], shmClock[1] );
-				numberOfLines++;
+				if ( keepWriting ) {
+					fprintf ( fp, "OSS: Generating process with PID %d (Low priority) and putting it in queue 0 at time %d:%d.\n", 
+						 pid, shmClock[0], shmClock[1] );
+					numberOfLines++;
+				}
 				enqueue ( lowPriorityQueue, pid );
 			}
 			if ( processPriority == 1 ) {
-				fprintf ( fp, "OSS: Generating process with PID %d (High priority) and putting it in queue 1 at time %d:%d.\n", 
+				if ( keepWriting ) {
+					fprintf ( fp, "OSS: Generating process with PID %d (High priority) and putting it in queue 1 at time %d:%d.\n", 
 					 pid, shmClock[0], shmClock[1] );
-				numberOfLines++;
+					numberOfLines++;
+				}
 				enqueue ( highPriorityQueue, pid ;
 			}
 			
