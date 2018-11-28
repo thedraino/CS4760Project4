@@ -156,7 +156,7 @@ bool roomForProcess ( int arr[] ) {
 	int index; 
 	int size = sizeof ( arr );
 	for ( index = 0; index < size; ++ index ) {
-		if ( arr[i] == 0 ) {
+		if ( arr[index] == 0 ) {
 			foundRoom = true;
 			break;
 		}
