@@ -93,7 +93,7 @@ int main ( int argc, int *argv[] ) {
 		perror ( "OSS: Failure to attach to shared memory space for simulated system clock." );
 		return 1; 
 	}
-	shmClock[0] = 14;	// Will hold the seconds value for the simulated system clock
+	shmClock[0] = 13;	// Will hold the seconds value for the simulated system clock
 	shmClock[1] = 1235;	// Will hold the nanoseconds value for the simulated system clock
 	
 	// Attach to shared memory for Process Control Block 
