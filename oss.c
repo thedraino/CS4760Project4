@@ -25,6 +25,7 @@ int rear ( Queue* queue );
 
 // Other functions
 bool roomForProcess ( int arr[] );
+bool timeForProcess ( unsigned int systemClock[], nextProcessClock[] );
 void incrementClock ( unsigned int clock[] );
 void cleanUpResources();
 
@@ -110,15 +111,13 @@ int main ( int argc, int *argv[] ) {
 	/* Main Loop Variables and Preparation */
 	// Setup of bit vector. Bit vector size determined by value of maxCurrentProcesses. Each index
 	//	will be set to 0 by default. Once a process is created, OSS will set the flag of an index
-	//	to 1. That index will then be associated with that process until the process terminates. 
-	//	Upon, process termination, OSS will reset that flag to 0 allowing a new process to be created.
+	//	to the pid of the new process. That index will then be associated with that process until 
+	//	the process terminates. Upon, process termination, OSS will reset that flag to 0 allowing
+	//	a new process to be created.
 	int bitVector[maxCurrentProcesses];
 	for ( i = 0; i < maxCurrentProcesses; ++i ) {
 		bitVector[i] = 0;
 	}
-	
-	if ( roomForProcess ( bitVector ) )
-		printf ( "There is room for a new process.\n" );
 	
 	// Set up clock to determine when new child processes should be created. Set at 0 by default so that 
 	//	a child process is created immediately. Value will then be increment by some random amount to 
@@ -134,7 +133,20 @@ int main ( int argc, int *argv[] ) {
 	Queue* highPriorityQueue = createQueue ( maxCurrentProcesses );
 	Queue* lowPriorityQueue = createQueue ( maxCurrentProcesses );
 	
+	// Other random variables that are only used in the main loop 
+	int processPriority;		// Will store the 0 or 1 (RNG) that will be assigned to each created process.
+	int tempBitVectorIndex = 0;	// Will store the current open index in the bit vector to be assigned to a new process.
 	
+	if ( timeForProcess ( shmClock, nextProcessTimer ) {
+		printf ( "Time for a new processes\n." );
+	
+	/ ***** Main Loop ***** /
+	// Loop will run until the maxTotalProcesses limit has been reached. 
+	/*while ( totalProcessesCreated < maxTotalProcesses ) {
+		
+		
+		
+	} */// End of Main Loop
 	
 	/* Detach from and delete shared memory segments. Delete message queue. Close the outfile. */
 	cleanUpResources();
@@ -163,6 +175,18 @@ bool roomForProcess ( int arr[] ) {
 	}
 	
 	return foundRoom; 
+}
+
+// Function to compare the shared memory clock with the clock indicating when a new process should be created. 
+//	Returns true if system clock has reached or passed the indicated time by the new process clock. Returns
+//	false otherwise. 
+bool timeForProcess ( unsigned int systemClock[], nextProcessClock[] ) {
+	if ( ( systemClock[0] > nextProcessClock[0] && systemClock[1] <= nextProcessClock[1] ) 
+	    || ( systemClock[0] == nextProcessClock[0] && systemClock1] >= nextProcessClock[1] ) ) {
+		return true;
+	}
+	else
+		return false;
 }
 
 // Function to terminate all shared memory and message queue up completion or to work with signal handling
