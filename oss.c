@@ -33,10 +33,8 @@ const int maxCurrentProcesses = 18;	// Controls how many child processes are all
 const int maxTotalProcesses = 100; 	// Controls how many child processes are allowed to be created in total
 const int killTimer = 2; 		// Controls the amount of seconds the program can be running
 
-// Logfile Information 
+// Logfile Access Pointer 
 FILE *fp;
-char filename[12] = "program.log";	// Name of the the log file that will be written to throughout the life of the program
-int numberOFLines; 			// Counter to track the size of the logfile (limited to 10,000 lines)
 
 
 /*************************************************************************************************************/
@@ -45,7 +43,37 @@ int numberOFLines; 			// Counter to track the size of the logfile (limited to 10
 
 int main ( int argc, int *argv[] ) {
 	printf ( "Hello, from oss.\n" );
-  
+	
+	/* General variables */
+	int i, j;			// Index variables for loop control throughout the program.
+	int totalProcessesCreated = 0;	// Counter variable to track how many total processes have been created.
+	int ossPid = getpid();		// Hold the pid for OSS
+	srand ( time ( NULL ) );	// Seed for OSS to generate random numbers when necessary.
+	
+	/* Output file info */
+	char logName[12] = "program.log";	// Name of the the log file that will be written to throughout the life of the program.
+	int numberOFLines = 0; 			// Counter to track the size of the logfile (limited to 10,000 lines).
+	fp = fopen ( logName, "w+" );		// Opens file for writing. Logfile will be overwritten after each run. 
+	
+	/* Signal Handling */
+	// Set the alarm
+	alarm ( killTimer );
+	
+	// Setup handling of ctrl-c or other abnormal termination signals
+	if ( signal ( SIGINT, sig_handle ) == SIG_ERR ) {
+		perror ( "OSS: ctrl-c signal failed." );
+	}
+	
+	// Setup handling of alarm termination signal 
+	if ( signal ( SIGALRM, sig_handle ) == SIG_ERR ) {
+		perror ( "OSS: alarm signal failed." );
+	}
+
+	/* Shared Memory */
+	// Created of shared memory for simulated system clock and process control block 
+	if ( ( shmClockID = 
+	
+	
 	return 0;
 }
 
@@ -55,6 +83,23 @@ int main ( int argc, int *argv[] ) {
 
 
 /* Function Definitions */
+
+// Function to terminate all shared memory and message queue up completion or to work with signal handling
+/*void cleanUpResources() {
+	// Close the file
+	fclose ( fp );
+	
+	// Detach from shared memory
+	shmdt ( shmClock );
+	shmdt ( shmBlocked );
+
+	// Destroy shared memory
+	shmctl ( shmClockID, IPC_RMID, NULL );
+	shmctl ( shmBlockedID, IPC_RMID, NULL );
+	
+	// Destroy message queue
+	msgctl ( messageID, IPC_RMID, NULL );
+}*/
 
 // Function for signal handling.
 // Handles ctrl-c from keyboard or eclipsing 2 real life seconds in run-time.
@@ -77,23 +122,6 @@ void incrementClock ( unsigned int clock[] ) {
 	clock[0] += shmClock[1] / 1000000000;
 	clock[1] = shmClock[1] % 1000000000;
 }
-
-// Function to terminate all shared memory and message queue up completion or to work with signal handling
-/*void cleanUpResources() {
-	// Close the file
-	fclose ( fp );
-	
-	// Detach from shared memory
-	shmdt ( shmClock );
-	shmdt ( shmBlocked );
-
-	// Destroy shared memory
-	shmctl ( shmClockID, IPC_RMID, NULL );
-	shmctl ( shmBlockedID, IPC_RMID, NULL );
-	
-	// Destroy message queue
-	msgctl ( messageID, IPC_RMID, NULL );
-}*/
 
 // Note: Queue code is gotten from https://www.geeksforgeeks.org/queue-set-1introduction-and-array-implementation/
 
