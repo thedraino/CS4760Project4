@@ -142,6 +142,7 @@ int main ( int argc, int *argv[] ) {
 	int rngPriority;		// Will stored the randomly generated number to control 
 	int tempBitVectorIndex = 0;	// Will store the current open index in the bit vector to be assigned to a new process.
 	bool createProcess;		// Flag to control when the process creation logic is entered. 
+	int randOverhead;		
 	
 	/****** Main Loop ******/
 	// Loop will run until the maxTotalProcesses limit has been reached. 
@@ -187,10 +188,6 @@ int main ( int argc, int *argv[] ) {
 				char intBuffer[3];
 				sprintf ( intBuffer, "%d", tempBitVectorIndex );
 				
-				fprintf ( fp, "OSS: Process % created at %d:%d. Stored in Index %d.\n", 
-					 getpid(), shmClock[0], shmClock[1], tempBitVectorIndex );
-				numberOfLines++; 
-				
 				execl ( "./user", "user", intBuffer, NULL );
 			} // End of child process logic
 			
@@ -213,16 +210,29 @@ int main ( int argc, int *argv[] ) {
 			
 			// Put the child process's pid the appropriate queue.
 			if ( processPriority == 0 ) {
+				fprintf ( fp, "OSS: Generating process with PID %d (Low priority) and putting it in queue 0 at time %d:%d.\n", 
+					 pid, shmClock[0], shmClock[1] );
+				numberOfLines++;
 				enqueue ( lowPriorityQueue, pid );
 			}
 			if ( processPriority == 1 ) {
+				fprintf ( fp, "OSS: Generating process with PID %d (High priority) and putting it in queue 1 at time %d:%d.\n", 
+					 pid, shmClock[0], shmClock[1] );
+				numberOfLines++;
 				enqueue ( highPriorityQueue, pid ;
 			}
 		} // End of Create Process Logic
 		
 		/* Scheduling */
 					 
-					 
+		
+		// Increment clock 
+		randOverhead = ( rand() % ( 1000 - 0 + 1 ) ) + 0;
+		shmClock[0]++;
+		shmClock[1] += randOverhead;
+		shmClock[0] += shmClock[1] / 1000000000;
+		shmClock[1] = shmClock[1] % 1000000000;
+		
 	} // End of Main Loop
 	
 	/* Detach from and delete shared memory segments. Delete message queue. Close the outfile. */
