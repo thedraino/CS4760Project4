@@ -4,19 +4,20 @@
 // User process which is generated and scheduled by OSS
 #include "project4.h"
 
-const int baseQuantum = 6;
+const unsigned int baseQuantum = 5000000;
 
 int main ( int argc, char *argv[] ) {
 	/* General Variables */
 	int i, j;				// Loop index variables.
 	int myPid = getpid();			// Store process ID.
-	int ossPid = getppid();			// Store parent process ID.
+	long ossPid = getppid();		// Store parent process ID.
 	int tableIndex = atoi ( argv[1] );	// Store process control block index passed from OSS. 
 	int priority;				// Store the priority that is in the process control block.
 	unsigned int timeCreated[2];		// Store the the process entered the system. 
-	int quantum;				// Time quantum for whenever process is dispatched. 
+	unsigned int quantum;			// Time quantum for whenever process is dispatched. 
 	int timeSlice; 				// Will determine how much of the quantum the process uses each dispatch
 	int randTerminate;			// Will randomly determine if the process terminated. 
+	unsigned timeSliceUsed; 
 	
 	/* USER-specific seed for random number generation */
 	time_t childSeed;
@@ -73,8 +74,44 @@ int main ( int argc, char *argv[] ) {
 	
 	/* Main Loop */
 	while ( 1 ) {
-		// 1. Wait for message saying process has been dispatched.
-		// 2. Determine if process will terminate.
+		// Wait until a message is received from OSS which will indicate the process was dispatched.
+		// Blocked until a message is received. 
+		msgrcv ( messageID, &message, sizeof ( message ), myPid, 0 ); 
+		
+		// Determine if process will terminate. Process must have accumulated at least 50 milliseconds of
+		//	total CPU time. 
+		if ( shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] >= 50000000 ) {
+			randTerminate = ( rand() % ( 100 - 0 + 1) ) + 0;
+			if ( randTerminate >= 0 && randTerminate < 25 ) {
+				// Process has decided it is able to terminate. 
+				// Determine how much of time slice was used during this last run. Randomly generate a 1 or 0.
+				//	0 indicates whole time slice was used. 1 indicates just a portion was used. 
+				timeSlice = ( rand() % ( 1 - 0 + 1 ) ) + 0;
+				if ( timeSlice == 0 ) {
+					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] += quantum; 
+					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[0] += shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] / 1000000000;
+					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] = shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] % 1000000000;
+				}
+				if ( timeSlice == 1 ) {
+					timeSliceUsed = ( rand() % ( quantum - 0 + 1 ) ) + 0;
+					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] += timeSliceUsed; 
+					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[0] += shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] / 1000000000;
+					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] = shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] % 1000000000;
+				}
+				
+				// Send message to OSS indicating that the process has terminated.
+				message.msg_type = ossPid;		
+				message.pid = myPid;		
+				message.processIndex = tableIndex;	
+				message.terminated = true;	
+				
+				if ( msgsnd ( messageID, &message, sizeof ( message ), 0 ) == -1 ) {
+					perror ( "USER: Failure to send message." );
+				}
+				break;
+			}
+		} // End of terminate branch
+		
 		// 3. Determine how much of time quantum process will use. 
 		// 4. Update process control block.
 		// 5. Send message to OSS.
