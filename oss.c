@@ -183,8 +183,7 @@ bool roomForProcess ( int arr[] ) {
 //	Returns true if system clock has reached or passed the indicated time by the new process clock. Returns
 //	false otherwise. 
 bool timeForNewProcess ( unsigned int systemClock[], unsigned int nextProcessClock[] ) {
-	if ( ( systemClock[0] > nextProcessClock[0] && systemClock[1] <= nextProcessClock[1] ) 
-	    || ( systemClock[0] == nextProcessClock[0] && systemClock[1] >= nextProcessClock[1] ) ) {
+	if ( ( systemClock[0] >= nextProcessClock[0] ) && ( systemClock[1] >= nextProcessClock[1] ) ) {
 		return true;
 	}
 	else
