@@ -31,7 +31,6 @@ typedef struct {
 	unsigned int pcb_TotalCPUTimeUsed[2]	// Running counter of time when process was running after being scheduled
 	unsigned int pcb_TotalTimeInSystem[2];	// Running counter of time when process was alive
 	unsigned int pcb_TimeUsedLastBurst;	// Temporary tracker or most recent amount of time spent running
-	bool pcb_Terminated;			// Flag to indicate if the process has terminated or not
 } ProcessControlBlock;
 
 // Structure used in the message queue 
