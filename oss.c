@@ -123,7 +123,7 @@ int main ( int argc, int *argv[] ) {
 	//	a child process is created immediately. Value will then be increment by some random amount to 
 	//	indicate the next time after which a new child process should be created (if the bit vector allows).
 	unsigned int nextProcessTimer[2]; 
-	nextProcessTimer[0] = 0;
+	nextProcessTimer[0] = 1;
 	nextProcessTimer[1] = 0;
 	
 	// Set up of two round robin queues. As their names imply, one queue will be for high priority processes
@@ -138,7 +138,7 @@ int main ( int argc, int *argv[] ) {
 	int tempBitVectorIndex = 0;	// Will store the current open index in the bit vector to be assigned to a new process.
 	
 	if ( timeForProcess ( shmClock, nextProcessTimer ) )
-		printf ( "Time for a new processes\n." );
+		printf ( "Time for a new process.\n" );
 	
 	/****** Main Loop ******/
 	// Loop will run until the maxTotalProcesses limit has been reached. 
