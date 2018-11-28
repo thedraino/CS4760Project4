@@ -47,13 +47,17 @@ int main ( int argc, int *argv[] ) {
 	/* General variables */
 	int i, j;			// Index variables for loop control throughout the program.
 	int totalProcessesCreated = 0;	// Counter variable to track how many total processes have been created.
-	int ossPid = getpid();		// Hold the pid for OSS
+	int ossPid = getpid();		// Hold the pid for OSS 
+	pid_t childPid;			// Hold the pid for child process during process creation phase.
+	bool keepWriting = true;	// Variable to control when writing to the file should cease based on the 
+					//	number of lines.
 	srand ( time ( NULL ) );	// Seed for OSS to generate random numbers when necessary.
 	
 	/* Output file info */
 	char logName[12] = "program.log";	// Name of the the log file that will be written to throughout the life of the program.
 	int numberOFLines = 0; 			// Counter to track the size of the logfile (limited to 10,000 lines).
 	fp = fopen ( logName, "w+" );		// Opens file for writing. Logfile will be overwritten after each run. 
+	fprintf ( fp, "Testing...\n" );
 	
 	/* Signal Handling */
 	// Set the alarm
@@ -102,11 +106,33 @@ int main ( int argc, int *argv[] ) {
 		return 1; 
 	}
 	
-	sleep ( 5 );
+	/* Main Loop Variables and Preparation */
+	// Setup of bit vector. Bit vector size determined by value of maxCurrentProcesses. Each index
+	//	will be set to 0 by default. Once a process is created, OSS will set the flag of an index
+	//	to 1. That index will then be associated with that process until the process terminates. 
+	//	Upon, process termination, OSS will reset that flag to 0 allowing a new process to be created.
+	int bitVector[maxCurrentProcesses];
+	for ( i = 0; i < maxCurrentProcesses; ++i ) {
+		bitVector[i] = 0;
+	}
 	
-	// Detach from and delete shared memory segments.
-	// Delete message queue.
-	// Close the outfile
+	// Set up clock to determine when new child processes should be created. Set at 0 by default so that 
+	//	a child process is created immediately. Value will then be increment by some random amount to 
+	//	indicate the next time after which a new child process should be created (if the bit vector allows).
+	unsigned int nextProcessTimer[2]; 
+	nextProcessTimer[0] = 0;
+	nextProcessTimer[1] = 0;
+	
+	// Set up of two round robin queues. As their names imply, one queue will be for high priority processes
+	//	and another will be for low priority processes. Each will be the same size to account for bad RNG
+	//	with determing process priority. Size is determined by maxCurrentProcesses since there will never 
+	//	be more than that many processes alive at one time. 
+	Queue* highPriorityQueue = createQueue ( maxCurrentProcesses );
+	Queue* lowPriorityQueue = createQueue ( maxCurrentProcesses );
+	
+	
+	
+	/* Detach from and delete shared memory segments. Delete message queue. Close the outfile. */
 	cleanUpResources();
 	
 	return 0;
