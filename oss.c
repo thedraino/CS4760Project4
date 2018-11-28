@@ -25,7 +25,7 @@ int rear ( Queue* queue );
 
 // Other functions
 bool roomForProcess ( int arr[] );
-bool timeForProcess ( unsigned int systemClock[], unsigned int nextProcessClock[] );
+bool timeForNewProcess ( unsigned int systemClock[], unsigned int nextProcessClock[] );
 void incrementClock ( unsigned int clock[] );
 void cleanUpResources();
 
@@ -93,8 +93,8 @@ int main ( int argc, int *argv[] ) {
 		perror ( "OSS: Failure to attach to shared memory space for simulated system clock." );
 		return 1; 
 	}
-	shmClock[0] = 13;	// Will hold the seconds value for the simulated system clock
-	shmClock[1] = 1235;	// Will hold the nanoseconds value for the simulated system clock
+	shmClock[0] = 0;	// Will hold the seconds value for the simulated system clock
+	shmClock[1] = 0;	// Will hold the nanoseconds value for the simulated system clock
 	
 	// Attach to shared memory for Process Control Block 
 	if ( ( shmPCB = (ProcessControlBlock *) shmat ( shmPCBID, NULL, 0 ) ) < 0 ) {
@@ -123,8 +123,8 @@ int main ( int argc, int *argv[] ) {
 	//	a child process is created immediately. Value will then be increment by some random amount to 
 	//	indicate the next time after which a new child process should be created (if the bit vector allows).
 	unsigned int nextProcessTimer[2]; 
-	nextProcessTimer[0] = 14;
-	nextProcessTimer[1] = 1234;
+	nextProcessTimer[0] = 0;
+	nextProcessTimer[1] = 0;
 	
 	// Set up of two round robin queues. As their names imply, one queue will be for high priority processes
 	//	and another will be for low priority processes. Each will be the same size to account for bad RNG
@@ -137,8 +137,6 @@ int main ( int argc, int *argv[] ) {
 	int processPriority;		// Will store the 0 or 1 (RNG) that will be assigned to each created process.
 	int tempBitVectorIndex = 0;	// Will store the current open index in the bit vector to be assigned to a new process.
 	
-	if ( timeForProcess ( shmClock, nextProcessTimer ) )
-		printf ( "Time for a new process.\n" );
 	
 	/****** Main Loop ******/
 	// Loop will run until the maxTotalProcesses limit has been reached. 
@@ -180,7 +178,7 @@ bool roomForProcess ( int arr[] ) {
 // Function to compare the shared memory clock with the clock indicating when a new process should be created. 
 //	Returns true if system clock has reached or passed the indicated time by the new process clock. Returns
 //	false otherwise. 
-bool timeForProcess ( unsigned int systemClock[], unsigned int nextProcessClock[] ) {
+bool timeForNewProcess ( unsigned int systemClock[], unsigned int nextProcessClock[] ) {
 	if ( ( systemClock[0] > nextProcessClock[0] && systemClock[1] <= nextProcessClock[1] ) 
 	    || ( systemClock[0] == nextProcessClock[0] && systemClock[1] >= nextProcessClock[1] ) ) {
 		return true;
