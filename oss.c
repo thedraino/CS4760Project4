@@ -77,7 +77,7 @@ int main ( int argc, int *argv[] ) {
 	}
 	
 	// Creation of shared memory for process control block
-	if ( ( shmPCBID = sgmget ( shmPCBKey, ( 18 * ( sizeof ( ProcessControlBlock ) ) ), IPC_CREAT | 0666 ) ) == -1 ) {
+	if ( ( shmPCBID = shmget ( shmPCBKey, ( 18 * ( sizeof ( ProcessControlBlock ) ) ), IPC_CREAT | 0666 ) ) == -1 ) {
 		perror ( "OSS: Failure to create shared memory space for Process Control Block." );
 		return 1;
 	}
