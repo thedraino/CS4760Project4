@@ -4,7 +4,7 @@
 // User process which is generated and scheduled by OSS
 #include "project4.h"
 
-const int baseQuantum = 4;
+const int baseQuantum = 6;
 
 int main ( int argc, char *argv[] ) {
 	/* General Variables */
@@ -15,6 +15,8 @@ int main ( int argc, char *argv[] ) {
 	int priority;				// Store the priority that is in the process control block.
 	unsigned int timeCreated[2];		// Store the the process entered the system. 
 	int quantum;				// Time quantum for whenever process is dispatched. 
+	int timeSlice; 				// Will determine how much of the quantum the process uses each dispatch
+	int randTerminate;			// Will randomly determine if the process terminated. 
 	
 	/* USER-specific seed for random number generation */
 	time_t childSeed;
@@ -70,8 +72,13 @@ int main ( int argc, char *argv[] ) {
 	}
 	
 	/* Main Loop */
-	
-	
+	while ( 1 ) {
+		// 1. Wait for message saying process has been dispatched.
+		// 2. Determine if process will terminate.
+		// 3. Determine how much of time quantum process will use. 
+		// 4. Update process control block.
+		// 5. Send message to OSS.
+	}
 	
 	return 0;
 }
