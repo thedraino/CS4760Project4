@@ -194,7 +194,7 @@ int main ( int argc, int *argv[] ) {
 			// In the parent process...
 			// Set the priority for newly created process.
 			rngPriority = ( rand() % ( 100 - 1 + 1 ) ) + 1;
-			if ( rngPriority >= 1 || rngPriority < 25 ) {
+			if ( rngPriority >= 1 || rngPriority < 10 ) {
 				processPriority = 1;	// High priority
 			} else {
 				processPriority = 0; 	// Low priority
@@ -221,11 +221,22 @@ int main ( int argc, int *argv[] ) {
 				numberOfLines++;
 				enqueue ( highPriorityQueue, pid ;
 			}
+			
+			totalProcessCreated++;
 		} // End of Create Process Logic
 		
 		/* Scheduling */
 					 
-		
+		// 1. Check high priority queue. 
+		// 	- if empty, check low priority queue.
+		//	- if nonempty, dequeue and get pid. 
+		//	- send message to that process to show it has been dispatched. 
+		//	- wait for response from user process to show it has finished. 
+		//	- if user terminated, update stat variables. Toggle that bit back to unoccupied. 
+		//	- if user is still running, update stat variables. Put back into queue.
+		// 2. Check low priority queue.
+		//	- same as above
+					 
 		// Increment clock 
 		randOverhead = ( rand() % ( 1000 - 0 + 1 ) ) + 0;
 		shmClock[0]++;
