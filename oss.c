@@ -203,8 +203,10 @@ int main ( int argc, int *argv[] ) {
 			// Fill in process control block info for child process to see. 
 			shmPCB[tempBitVectorIndex].pcb_ProcessID = pid; 
 			shmPCB[tempBitVectorIndex].pcb_Priority = processPriority;
-			shmPCB[tempBitVectorIndex].pcb_TotalCPUTimeUsed = 0;
-			shmPCB[tempBitVectorIndex].pcb_TotalTimeInSystem = 0;
+			shmPCB[tempBitVectorIndex].pcb_TotalCPUTimeUsed[0] = 0;
+			shmPCB[tempBitVectorIndex].pcb_TotalCPUTimeUsed[1] = 0;
+			shmPCB[tempBitVectorIndex].pcb_TotalTimeInSystem[0] = 0;
+			shmPCB[tempBitVectorIndex].pcb_TotalTimeInSystem[1] = 0;
 			shmPCB[tempBitVectorIndex].pcb_TimeUsedLastBurst = 0;
 			shmPCB[tempBitVectorIndex].pcb_Terminated = false;
 			
