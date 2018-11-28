@@ -83,7 +83,7 @@ int main ( int argc, int *argv[] ) {
 	}
 	
 	// Attach to and initialize shared memory for simulated system clock
-	if ( ( shmClock = (unsigned int *) shmat ( shmClockID, NULL, 0 ) ) == -1 ) {
+	if ( ( shmClock = (unsigned int *) shmat ( shmClockID, NULL, 0 ) ) < 0 ) {
 		perror ( "OSS: Failure to attach to shared memory space for simulated system clock." );
 		return 1; 
 	}
@@ -91,7 +91,7 @@ int main ( int argc, int *argv[] ) {
 	shmClock[1] = 0;	// Will hold the nanoseconds value for the simulated system clock
 	
 	// Attach to shared memory for Process Control Block 
-	if ( ( shmPCB = (ProcessControlBlock *) shmat ( shmPCBID, NULL, 0 ) ) == -1 ) {
+	if ( ( shmPCB = (ProcessControlBlock *) shmat ( shmPCBID, NULL, 0 ) ) < 0 ) {
 		perror ( "OSS: Failure to attach to shared memory space for Process Control Block." );
 		return 1;
 	}
@@ -102,7 +102,7 @@ int main ( int argc, int *argv[] ) {
 		return 1; 
 	}
 	
-	wait ( 5 );
+	sleep ( 5 );
 	
 	// Detach from and delete shared memory segments.
 	// Delete message queue.
