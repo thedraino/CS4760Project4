@@ -240,6 +240,7 @@ int main ( int argc, int *argv[] ) {
 		//	- wait for response from user process to show it has finished. 
 		//	- if user terminated, update stat variables. Toggle that bit back to unoccupied. 
 		//	- if user is still running, update stat variables. Put back into queue.
+		//	- increment shmClock[1] by the LastUsedBurstTime
 		// 2. Check low priority queue.
 		//	- same as above
 					 
