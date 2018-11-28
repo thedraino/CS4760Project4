@@ -26,7 +26,7 @@ int rear ( Queue* queue );
 // Other functions
 bool roomForProcess ( int arr[] );
 int findIndex ( int arr[] );
-bool timeForNewProcess ( unsigned int systemClock[], unsigned int nextProcessClock[] );
+bool timeForNewProcess ( unsigned int systemClock[], unsigned int nextProcessTimer );
 void incrementClock ( unsigned int clock[] );
 void cleanUpResources();
 
@@ -120,12 +120,11 @@ int main ( int argc, int *argv[] ) {
 		bitVector[i] = 0;
 	}
 	
-	// Set up clock to determine when new child processes should be created. Set at 0 by default so that 
+	// Set up timer to determine when new child processes should be created. Set at 0 by default so that 
 	//	a child process is created immediately. Value will then be increment by some random amount to 
 	//	indicate the next time after which a new child process should be created (if the bit vector allows).
-	unsigned int nextProcessTimer[2]; 
-	nextProcessTimer[0] = 0;
-	nextProcessTimer[1] = 0;
+	unsigned int nextProcessTimer = 0;
+	int rngTimer; 
 	
 	// Set up of two round robin queues. As their names imply, one queue will be for high priority processes
 	//	and another will be for low priority processes. Each will be the same size to account for bad RNG
@@ -145,11 +144,23 @@ int main ( int argc, int *argv[] ) {
 		
 		// Check to see if the logfile has reached its line limit. If so, set the flag to false so that no 
 		//	more file writes occur. 
-		if ( numberOfLines >= 10000 ) 
+		if ( numberOfLines >= 10000 ) {
 			keepWriting = false;
+		}
 		
 		// Set the createProcess flag to false as the default each run through the main loop. 
 		createProcess = false;
+		
+		// Check to see if the simulated system clock has passed the time for the next process to be created and
+		//	if there is room for a new process at this time. If both are true, change createProcess flag to 
+		//	true. Then set a new time for the next process to be created. 
+		if ( timeForNewProcess ( shmClock, nextProcessTimer ) && roomForProcess ( bitVector ) ) {
+			createProcess = true;
+			rngTimer = ( rand() % ( 2 - 0 + `1 ) ) + 0; 
+			nextProcessTimer = shmClock[0] + rngTimer; 
+		}
+		
+		
 		
 	} // End of Main Loop
 	
@@ -185,8 +196,8 @@ bool roomForProcess ( int arr[] ) {
 // Function to compare the shared memory clock with the clock indicating when a new process should be created. 
 //	Returns true if system clock has reached or passed the indicated time by the new process clock. Returns
 //	false otherwise. 
-bool timeForNewProcess ( unsigned int systemClock[], unsigned int nextProcessClock[] ) {
-	if ( ( systemClock[0] >= nextProcessClock[0] ) && ( systemClock[1] >= nextProcessClock[1] ) ) {
+bool timeForNewProcess ( unsigned int systemClock[], unsigned int nextProcessTimer ) {
+	if ( systemClock[0] >= nextProcessTimer ) {
 		return true;
 	}
 	else
