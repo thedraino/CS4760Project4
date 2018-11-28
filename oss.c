@@ -114,7 +114,7 @@ int main ( int argc, int *argv[] ) {
 	//	Upon, process termination, OSS will reset that flag to 0 allowing a new process to be created.
 	int bitVector[maxCurrentProcesses];
 	for ( i = 0; i < maxCurrentProcesses; ++i ) {
-		bitVector[i] = 1;
+		bitVector[i] = 0;
 	}
 	
 	if ( roomForProcess ( bitVector ) )
