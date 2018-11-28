@@ -11,15 +11,15 @@ OBJS2   = user.o project4.h
 all: $(TARGET1) $(TARGET2)
 
 oss: $(OBJS1)
-    $(CC) $(CFLAGS) $(OBJS1) -o $@
+	$(CC) $(CFLAGS) $(OBJS1) -o $@
     
 user: $(OBJS2)
-    $(CC) $(CFLAGS) $(OBJS2) -o $@
+	$(CC) $(CFLAGS) $(OBJS2) -o $@
     
 .c.o:
-    $(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $<
     
 .PHONY: clean
 
 clean:
-    /bin/rm -f *.log *.o *~ $(TARGET1) $(TARGET2)
+	/bin/rm -f *.log *.o *~ $(TARGET1) $(TARGET2)
