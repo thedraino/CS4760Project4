@@ -38,8 +38,7 @@ typedef struct {
 typedef struct {
 	long msg_type;		// Control what process can receive the message.
 	int pid;		// Store the sending process's pid.
-	int pcbIndex;		// Store the sending process's index in the process control block.
-	int bvIndex;		// Store the child process's bit vector index 
+	int processIndex;	// Store the sending process's index in the process control block and bit vector.
 	bool terminated;	// Flag to indicate that the process was able to terminate. 
 } Message;
 
