@@ -140,7 +140,7 @@ int main ( int argc, int *argv[] ) {
 	if ( timeForProcess ( shmClock, nextProcessTimer ) )
 		printf ( "Time for a new processes\n." );
 	
-	/ ***** Main Loop ***** /
+	/****** Main Loop ******/
 	// Loop will run until the maxTotalProcesses limit has been reached. 
 	/*while ( totalProcessesCreated < maxTotalProcesses ) {
 		
