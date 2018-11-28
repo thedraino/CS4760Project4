@@ -25,6 +25,7 @@ int rear ( Queue* queue );
 
 // Other functions
 bool roomForProcess ( int arr[] );
+int findIndex ( int arr[] );
 bool timeForNewProcess ( unsigned int systemClock[], unsigned int nextProcessClock[] );
 void incrementClock ( unsigned int clock[] );
 void cleanUpResources();
@@ -136,7 +137,7 @@ int main ( int argc, int *argv[] ) {
 	// Other random variables that are only used in the main loop 
 	int processPriority;		// Will store the 0 or 1 (RNG) that will be assigned to each created process.
 	int tempBitVectorIndex = 0;	// Will store the current open index in the bit vector to be assigned to a new process.
-	
+	bool createProcess;		// Flag to control when the process creation logic is entered. 
 	
 	/****** Main Loop ******/
 	// Loop will run until the maxTotalProcesses limit has been reached. 
@@ -147,6 +148,8 @@ int main ( int argc, int *argv[] ) {
 		if ( numberOfLines >= 10000 ) 
 			keepWriting = false;
 		
+		// Set the createProcess flag to false as the default each run through the main loop. 
+		createProcess = false;
 		
 	} // End of Main Loop
 	
@@ -189,6 +192,21 @@ bool timeForNewProcess ( unsigned int systemClock[], unsigned int nextProcessClo
 	else
 		return false;
 }
+
+// Function to return the first available index in the bit vector.
+int findIndex ( int arr[] ) {
+	int index, i, size;
+	size = sizeof ( arr );
+	for ( i = 0; i < size; ++i ) {
+		if ( arr[i] != 0 ) {
+			index = arr[i];
+			break;
+		}
+	}
+	
+	return index;
+}
+
 
 // Function to terminate all shared memory and message queue up completion or to work with signal handling
 void cleanUpResources() {
