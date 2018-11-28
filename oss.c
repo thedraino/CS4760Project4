@@ -24,6 +24,7 @@ int front ( Queue* queue );
 int rear ( Queue* queue );
 
 // Other functions
+bool roomForProcess ( int arr[] );
 void incrementClock ( unsigned int clock[] );
 void cleanUpResources();
 
@@ -116,6 +117,9 @@ int main ( int argc, int *argv[] ) {
 		bitVector[i] = 0;
 	}
 	
+	if ( roomForProcess ( bitVector ) )
+		printf ( "There is room for a new process.\n" );
+	
 	// Set up clock to determine when new child processes should be created. Set at 0 by default so that 
 	//	a child process is created immediately. Value will then be increment by some random amount to 
 	//	indicate the next time after which a new child process should be created (if the bit vector allows).
@@ -144,6 +148,22 @@ int main ( int argc, int *argv[] ) {
 
 
 /* Function Definitions */
+
+// Function to scan bit vector array to see if there is room for a new process to be added. Returns true if it 
+//	finds a 0 in the array. Returns false if there are no 0's in the array. 
+bool roomForProcess ( int arr[] ) {
+	bool foundRoom = false;
+	int index; 
+	int size = sizeof ( arr );
+	for ( index = 0; index < size; ++ index ) {
+		if ( arr[i] == 0 ) {
+			foundRoom = true;
+			break;
+		}
+	}
+	
+	return foundRoom; 
+}
 
 // Function to terminate all shared memory and message queue up completion or to work with signal handling
 void cleanUpResources() {
