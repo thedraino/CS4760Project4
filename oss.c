@@ -102,6 +102,13 @@ int main ( int argc, int *argv[] ) {
 		return 1; 
 	}
 	
+	wait ( 5 );
+	
+	// Detach from and delete shared memory segments.
+	// Delete message queue.
+	// Close the outfile
+	cleanUpResources();
+	
 	return 0;
 }
 
@@ -113,21 +120,21 @@ int main ( int argc, int *argv[] ) {
 /* Function Definitions */
 
 // Function to terminate all shared memory and message queue up completion or to work with signal handling
-/*void cleanUpResources() {
+void cleanUpResources() {
 	// Close the file
 	fclose ( fp );
 	
 	// Detach from shared memory
 	shmdt ( shmClock );
-	shmdt ( shmBlocked );
+	shmdt ( shmPCB );
 
 	// Destroy shared memory
 	shmctl ( shmClockID, IPC_RMID, NULL );
-	shmctl ( shmBlockedID, IPC_RMID, NULL );
+	shmctl ( shmPCBID, IPC_RMID, NULL );
 	
 	// Destroy message queue
 	msgctl ( messageID, IPC_RMID, NULL );
-}*/
+}
 
 // Function for signal handling.
 // Handles ctrl-c from keyboard or eclipsing 2 real life seconds in run-time.
