@@ -51,7 +51,7 @@ int main ( int argc, int *argv[] ) {
 	int i, j;			// Index variables for loop control throughout the program.
 	int totalProcessesCreated = 0;	// Counter variable to track how many total processes have been created.
 	int ossPid = getpid();		// Hold the pid for OSS 
-	pid_t pid;
+	pid_t childPid;
 	
 	srand ( time ( NULL ) );	// Seed for OSS to generate random numbers when necessary.
 	
@@ -171,16 +171,16 @@ int main ( int argc, int *argv[] ) {
 		//	before it goes on to schedule anything. 
 		if ( createProcess ) {
 			tempBitVectorIndex = findIndex ( bitVector );
-			pid = fork();
+			childPid = fork();
 			
 			// Check for failure to fork child process.
-			if ( pid < 0 ) {
+			if ( childPid < 0 ) {
 				perror ( "OSS: Failure to fork child process." );
 				kill ( getpid(), SIGINT );
 			}
 			
 			// In the child process...
-			if ( pid == 0 ) {
+			if ( childPid == 0 ) {
 				// Store child's pid in the associated index of the bit vector
 				bitVector[tempBitVectorIndex] = getpid();
 				
@@ -201,7 +201,7 @@ int main ( int argc, int *argv[] ) {
 			}
 			
 			// Fill in process control block info for child process to see. 
-			shmPCB[tempBitVectorIndex].pcb_ProcessID = pid; 
+			shmPCB[tempBitVectorIndex].pcb_ProcessID = childPid; 
 			shmPCB[tempBitVectorIndex].pcb_Priority = processPriority;
 			shmPCB[tempBitVectorIndex].pcb_TotalCPUTimeUsed[0] = 0;
 			shmPCB[tempBitVectorIndex].pcb_TotalCPUTimeUsed[1] = 0;
@@ -214,18 +214,18 @@ int main ( int argc, int *argv[] ) {
 			if ( processPriority == 0 ) {
 				if ( keepWriting ) {
 					fprintf ( fp, "OSS: Generating process with PID %d (Low priority) and putting it in queue 0 at time %d:%d.\n", 
-						 pid, shmClock[0], shmClock[1] );
+						 childPid, shmClock[0], shmClock[1] );
 					numberOfLines++;
 				}
-				enqueue ( lowPriorityQueue, pid );
+				enqueue ( lowPriorityQueue, childPid );
 			}
 			if ( processPriority == 1 ) {
 				if ( keepWriting ) {
 					fprintf ( fp, "OSS: Generating process with PID %d (High priority) and putting it in queue 1 at time %d:%d.\n", 
-					 pid, shmClock[0], shmClock[1] );
+					 childPid, shmClock[0], shmClock[1] );
 					numberOfLines++;
 				}
-				enqueue ( highPriorityQueue, pid ;
+				enqueue ( highPriorityQueue, childPid ;
 			}
 			
 			totalProcessCreated++;
