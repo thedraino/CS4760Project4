@@ -94,7 +94,7 @@ int main ( int argc, int *argv[] ) {
 		return 1; 
 	}
 	shmClock[0] = 14;	// Will hold the seconds value for the simulated system clock
-	shmClock[1] = 1234;	// Will hold the nanoseconds value for the simulated system clock
+	shmClock[1] = 1235;	// Will hold the nanoseconds value for the simulated system clock
 	
 	// Attach to shared memory for Process Control Block 
 	if ( ( shmPCB = (ProcessControlBlock *) shmat ( shmPCBID, NULL, 0 ) ) < 0 ) {
