@@ -88,17 +88,24 @@ int main ( int argc, char *argv[] ) {
 				//	0 indicates whole time slice was used. 1 indicates just a portion was used. 
 				timeSlice = ( rand() % ( 1 - 0 + 1 ) ) + 0;
 				if ( timeSlice == 0 ) {
+					shmPCB[tableIndex].pcb_TimeUsedLastBurst = quantum;
 					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] += quantum; 
 					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[0] += shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] / 1000000000;
 					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] = shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] % 1000000000;
 				}
 				if ( timeSlice == 1 ) {
 					timeSliceUsed = ( rand() % ( quantum - 0 + 1 ) ) + 0;
+					shmPCB[tableIndex].pcb_TimeUsedLastBurst = timeSliceUsed;
 					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] += timeSliceUsed; 
 					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[0] += shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] / 1000000000;
 					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] = shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] % 1000000000;
-				}
+				}				
 				
+				// Update total time in system by subtracting the time it entered the system from the current
+				//	time in the simulated system clock. 
+				shmPCB[tableIndex].pcb_totalTimeInSystem[0] = shmClock[0] - timeCreated[0];
+				shmPCB[tableIndex].pcb_totalTimeInSystem[1] = shmClock[1] - timeCreated[1];
+
 				// Send message to OSS indicating that the process has terminated.
 				message.msg_type = ossPid;		
 				message.pid = myPid;		
@@ -112,10 +119,32 @@ int main ( int argc, char *argv[] ) {
 			}
 		} // End of terminate branch
 		
-		// 3. Determine how much of time quantum process will use. 
-		// 4. Update process control block.
-		// 5. Send message to OSS.
-	}
+		// If process isn't terminating, determine how much of time quantum process will use. 
+		timeSlice = ( rand() % ( 1 - 0 + 1 ) ) + 0;
+		if ( timeSlice == 0 ) {
+			shmPCB[tableIndex].pcb_TimeUsedLastBurst = quantum;
+			shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] += quantum; 
+			shmPCB[tableIndex].pcb_TotalCPUTimeUsed[0] += shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] / 1000000000;
+			shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] = shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] % 1000000000;
+		}
+		if ( timeSlice == 1 ) {
+			timeSliceUsed = ( rand() % ( quantum - 0 + 1 ) ) + 0;
+			shmPCB[tableIndex].pcb_TimeUsedLastBurst = timeSliceUsed;
+			shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] += timeSliceUsed; 
+			shmPCB[tableIndex].pcb_TotalCPUTimeUsed[0] += shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] / 1000000000;
+			shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] = shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] % 1000000000;
+		}
+
+		// Send message to OSS indicating that the process has finished reached its quantum or slice of quantum.
+		message.msg_type = ossPid;		
+		message.pid = myPid;		
+		message.processIndex = tableIndex;	
+		message.terminated = false;	
+
+		if ( msgsnd ( messageID, &message, sizeof ( message ), 0 ) == -1 ) {
+			perror ( "USER: Failure to send message." );
+		}
+	} // End of main loop
 	
 	return 0;
 }
