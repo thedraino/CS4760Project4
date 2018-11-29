@@ -4,7 +4,7 @@
 // User process which is generated and scheduled by OSS
 #include "project4.h"
 
-const unsigned int baseQuantum = 5000000;
+const unsigned int baseQuantum = 50000;
 
 int main ( int argc, char *argv[] ) {
 	/* General Variables */
@@ -80,7 +80,7 @@ int main ( int argc, char *argv[] ) {
 		
 		// Determine if process will terminate. Process must have accumulated at least 50 milliseconds of
 		//	total CPU time. 
-		if ( shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] >= 50000000 ) {
+		if ( shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] >= 500000 ) {
 			randTerminate = ( rand() % ( 100 - 0 + 1) ) + 0;
 			if ( randTerminate >= 0 && randTerminate < 25 ) {
 				// Process has decided it is able to terminate. 
