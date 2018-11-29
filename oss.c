@@ -296,7 +296,7 @@ int main ( int argc, int *argv[] ) {
 					 childPid, shmClock[0], shmClock[1] );
 					numberOfLines++;
 				}
-				enqueue ( highPriorityQueue, childPid );
+				enqueue ( highPriorityQueue, tempChildPid );
 			}
 		} // End of checking high priority queue	
 		// 2. Check low priority queue. Same logic as above with high priority queue management.		
@@ -354,11 +354,11 @@ int main ( int argc, int *argv[] ) {
 			} else { 
 				// Put the child process's pid the appropriate queue.
 				if ( keepWriting ) {
-					fprintf ( fp, "OSS: Placing process PID %d (High priority) back in queue 1 at time %d:%d.\n", 
+					fprintf ( fp, "OSS: Placing process PID %d (Low priority) back in queue 0 at time %d:%d.\n", 
 					 childPid, shmClock[0], shmClock[1] );
 					numberOfLines++;
 				}
-				enqueue ( highPriorityQueue, childPid );
+				enqueue ( lowPriorityQueue, tempChildPid );
 			}
 		} // End of checking low priority queue
 		else {
@@ -436,17 +436,21 @@ int findIndex ( int arr[] ) {
 void cleanUpResources() {
 	// Close the file
 	fclose ( fp );
+	printf ( "Closed %s\n.", logName );
 	
 	// Detach from shared memory
+	printf ( "Detaching from shared memory...\n" );
 	shmdt ( shmClock );
 	shmdt ( shmPCB );
 
 	// Destroy shared memory
 	shmctl ( shmClockID, IPC_RMID, NULL );
 	shmctl ( shmPCBID, IPC_RMID, NULL );
+	printf ( "Destroyed shared memory.\n );
 	
 	// Destroy message queue
 	msgctl ( messageID, IPC_RMID, NULL );
+	printf ( "Destroyed message queue.\n" );
 }
 
 // Function for signal handling.
