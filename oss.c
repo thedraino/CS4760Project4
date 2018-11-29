@@ -44,7 +44,7 @@ char logName[12] = "program.log";	// Name of the the log file that will be writt
 /******************************************* Start of Main Function ******************************************/
 /*************************************************************************************************************/
 
-int main ( int argc, int *argv[] ) {
+int main ( int argc, char *argv[] ) {
 	printf ( "Hello, from oss.\n" );
 	
 	/* General variables */
