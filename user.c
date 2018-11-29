@@ -105,8 +105,8 @@ int main ( int argc, char *argv[] ) {
 				
 				// Update total time in system by subtracting the time it entered the system from the current
 				//	time in the simulated system clock. 
-				shmPCB[tableIndex].pcb_totalTimeInSystem[0] = shmClock[0] - timeCreated[0];
-				shmPCB[tableIndex].pcb_totalTimeInSystem[1] = shmClock[1] - timeCreated[1];
+				shmPCB[tableIndex].pcb_TotalTimeInSystem[0] = shmClock[0] - timeCreated[0];
+				shmPCB[tableIndex].pcb_TotalTimeInSystem[1] = shmClock[1] - timeCreated[1];
 
 				// Send message to OSS indicating that the process has terminated.
 				message.msg_type = ossPid;		
