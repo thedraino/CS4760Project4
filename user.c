@@ -88,12 +88,14 @@ int main ( int argc, char *argv[] ) {
 				//	0 indicates whole time slice was used. 1 indicates just a portion was used. 
 				timeSlice = ( rand() % ( 1 - 0 + 1 ) ) + 0;
 				if ( timeSlice == 0 ) {
+					message.usedFullQuantum = true;
 					shmPCB[tableIndex].pcb_TimeUsedLastBurst = quantum;
 					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] += quantum; 
 					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[0] += shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] / 1000000000;
 					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] = shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] % 1000000000;
 				}
 				if ( timeSlice == 1 ) {
+					message.usedFullQuantum = false;
 					timeSliceUsed = ( rand() % ( quantum - 0 + 1 ) ) + 0;
 					shmPCB[tableIndex].pcb_TimeUsedLastBurst = timeSliceUsed;
 					shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] += timeSliceUsed; 
@@ -122,12 +124,14 @@ int main ( int argc, char *argv[] ) {
 		// If process isn't terminating, determine how much of time quantum process will use. 
 		timeSlice = ( rand() % ( 1 - 0 + 1 ) ) + 0;
 		if ( timeSlice == 0 ) {
+			message.usedFullQuantum = true;
 			shmPCB[tableIndex].pcb_TimeUsedLastBurst = quantum;
 			shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] += quantum; 
 			shmPCB[tableIndex].pcb_TotalCPUTimeUsed[0] += shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] / 1000000000;
 			shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] = shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] % 1000000000;
 		}
 		if ( timeSlice == 1 ) {
+			message.usedFullQuantum = false;
 			timeSliceUsed = ( rand() % ( quantum - 0 + 1 ) ) + 0;
 			shmPCB[tableIndex].pcb_TimeUsedLastBurst = timeSliceUsed;
 			shmPCB[tableIndex].pcb_TotalCPUTimeUsed[1] += timeSliceUsed; 
