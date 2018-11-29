@@ -37,6 +37,7 @@ int totalProcessesTerminated = 0;
 
 // Logfile Access Pointer 
 FILE *fp;
+char logName[12] = "program.log";	// Name of the the log file that will be written to throughout the life of the program.
 
 
 /*************************************************************************************************************/
@@ -54,9 +55,8 @@ int main ( int argc, int *argv[] ) {
 	
 	srand ( time ( NULL ) );	// Seed for OSS to generate random numbers when necessary.
 	
-	/* Output file info */
-	char logName[12] = "program.log";	// Name of the the log file that will be written to throughout the life of the program.
-	int numberOFLines = 0; 			// Counter to track the size of the logfile (limited to 10,000 lines).
+	/* Output file */
+	int numberOfLines = 0; 			// Counter to track the size of the logfile (limited to 10,000 lines).
 	fp = fopen ( logName, "w+" );		// Opens file for writing. Logfile will be overwritten after each run. 
 	bool keepWriting = true;		// Variable to control when writing to the file should cease based on the 
 						//	number of lines.
@@ -166,7 +166,7 @@ int main ( int argc, int *argv[] ) {
 		//	true. Then set a new time for the next process to be created. 
 		if ( timeForNewProcess ( shmClock, nextProcessTimer ) && roomForProcess ( bitVector ) ) {
 			createProcess = true;
-			rngTimer = ( rand() % ( 2 - 0 + `1 ) ) + 0; 
+			rngTimer = ( rand() % ( 2 - 0 + 1 ) ) + 0; 
 			nextProcessTimer = rngTimer; 
 		}
 		
@@ -212,7 +212,6 @@ int main ( int argc, int *argv[] ) {
 			shmPCB[tempBitVectorIndex].pcb_TotalTimeInSystem[0] = 0;
 			shmPCB[tempBitVectorIndex].pcb_TotalTimeInSystem[1] = 0;
 			shmPCB[tempBitVectorIndex].pcb_TimeUsedLastBurst = 0;
-			shmPCB[tempBitVectorIndex].pcb_Terminated = false;
 			
 			// Put the child process's pid the appropriate queue.
 			if ( processPriority == 0 ) {
@@ -232,7 +231,7 @@ int main ( int argc, int *argv[] ) {
 				enqueue ( highPriorityQueue, childPid );
 			}
 			
-			totalProcessCreated++;
+			totalProcessesCreated++;
 		} // End of Create Process Logic
 		
 		/* Scheduling */
@@ -446,7 +445,7 @@ void cleanUpResources() {
 	// Destroy shared memory
 	shmctl ( shmClockID, IPC_RMID, NULL );
 	shmctl ( shmPCBID, IPC_RMID, NULL );
-	printf ( "Destroyed shared memory.\n );
+	printf ( "Destroyed shared memory.\n" );
 	
 	// Destroy message queue
 	msgctl ( messageID, IPC_RMID, NULL );
