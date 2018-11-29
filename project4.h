@@ -28,7 +28,7 @@ typedef struct {
 	int pcb_Index;				// Index to in PCB associated with a specific process
 	int pcb_ProcessID;			// Stores process's unique pid
 	int pcb_Priority;			// Stores the priority assigned by OSS upon creation
-	unsigned int pcb_TotalCPUTimeUsed[2]	// Running counter of time when process was running after being scheduled
+	unsigned int pcb_TotalCPUTimeUsed[2];	// Running counter of time when process was running after being scheduled
 	unsigned int pcb_TotalTimeInSystem[2];	// Running counter of time when process was alive
 	unsigned int pcb_TimeUsedLastBurst;	// Temporary tracker or most recent amount of time spent running
 } ProcessControlBlock;
