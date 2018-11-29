@@ -295,8 +295,14 @@ int main ( int argc, int *argv[] ) {
 			}
 		} // End of checking high priority queue	
 		// 2. Check low priority queue. Same logic as above with high priority queue management.		
-		else {
+		else if ( !isEmpty ( lowPriorityQueue ) ) {
 			
+		} // End of checking low priority queue
+		else {
+			if ( keepWriting ) {
+				fprintf ( fp, "OSS: No processes are in either ready queue. Incrementing clock.\n" );
+				numberOfLines++;
+			}
 		}
 					 					 
 		// Increment clock 
