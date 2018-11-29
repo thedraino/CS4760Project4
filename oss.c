@@ -141,8 +141,13 @@ int main ( int argc, int *argv[] ) {
 	int rngPriority;		// Will stored the randomly generated number to control 
 	int tempBitVectorIndex = 0;	// Will store the current open index in the bit vector to be assigned to a new process.
 	bool createProcess;		// Flag to control when the process creation logic is entered. 
-	int randOverhead;		
-	
+	int randOverhead;
+	long tempPid;
+	int tempChildPid;
+	int tempProcessIndex;
+	bool tempQuantumFlag;
+	bool tempTerminate;
+		
 	/****** Main Loop ******/
 	// Loop will run until the maxTotalProcesses limit has been reached. 
 	while ( totalProcessesCreated < maxTotalProcesses ) {
@@ -235,7 +240,7 @@ int main ( int argc, int *argv[] ) {
 		// 1. Check high priority queue. If the queue is empty, continue to low priority branch. 
 		if ( !isEmpty ( highPriorityQueue ) ) {
 			// Dequeue
-			long tempPid = dequeue ( highPriorityQueue );
+			tempPid = dequeue ( highPriorityQueue );
 			
 			// Set up message and send message to dequeued process to dispatch it. 
 			message.msg_type = tempPid;
@@ -253,10 +258,10 @@ int main ( int argc, int *argv[] ) {
 			msgrcv ( messageID, &message, sizeof ( message ), ossPid, 0 ); 
 			
 			// Store values sent from USER in temp holders. 
-			int tempChildPid = message.pid;
-			int tempProcessIndex = message.processIndex; 
-			bool tempQuantumFlag = message.usedFullQuantum;
-			bool tempTerminate = message.terminated; 
+			tempChildPid = message.pid;
+			tempProcessIndex = message.processIndex; 
+			tempQuantumFlag = message.usedFullQuantum;
+			tempTerminate = message.terminated; 
 			
 			if ( keepWriting ) {
 				fprintf ( fp, "OSS: Process %d was able to run for %d seconds.\n", 
@@ -284,7 +289,7 @@ int main ( int argc, int *argv[] ) {
 						shmClock[0], shmClock[1] );
 					numberOfLines++;
 				}
-			} else if ( 
+			} else { 
 				// Put the child process's pid the appropriate queue.
 				if ( keepWriting ) {
 					fprintf ( fp, "OSS: Placing process PID %d (High priority) back in queue 1 at time %d:%d.\n", 
@@ -296,7 +301,65 @@ int main ( int argc, int *argv[] ) {
 		} // End of checking high priority queue	
 		// 2. Check low priority queue. Same logic as above with high priority queue management.		
 		else if ( !isEmpty ( lowPriorityQueue ) ) {
+			// Dequeue
+			tempPid = dequeue ( lowPriorityQueue );
 			
+			// Set up message and send message to dequeued process to dispatch it. 
+			message.msg_type = tempPid;
+			if ( msgsnd ( messageID, &message, sizeof ( message ), 0 ) == -1 ) {
+				perror ( "USER: Failure to send message." );
+			}
+			
+			if ( keepWriting ) {
+				fprintf ( fp, "OSS: Dispatching Process %d from queue 0 at time %d:%d.\n", 
+					 tempPid, shmClock[0], shmClock[1] );
+				numberOfLines++;
+			}
+			
+			// Wait for message from USER saying it has finished running for its allotted time. 
+			msgrcv ( messageID, &message, sizeof ( message ), ossPid, 0 ); 
+			
+			// Store values sent from USER in temp holders. 
+			tempChildPid = message.pid;
+			tempProcessIndex = message.processIndex; 
+			tempQuantumFlag = message.usedFullQuantum;
+			tempTerminate = message.terminated; 
+			
+			if ( keepWriting ) {
+				fprintf ( fp, "OSS: Process %d was able to run for %d seconds.\n", 
+					 tempChildPid, shmPCB[tempProcessIndex].pcb_TimeUsedLastBurst );
+				numberOfLines++;
+			}
+			
+			if ( keepWriting && !tempQuantumFlag ) {
+				fprintf ( fp, "OSS: Process %d did not use its entire time quantum.\n", tempChildPid );
+				numberOfLines++;
+			}
+			
+			// Update simulated system clock
+			shmClock[1] += shmPCB[tempProcessIndex].pcb_TimeUsedLastBurst;
+			shmClock[0] += shmClock[1] / 1000000000;
+			shmClock[1] = shmClock[1] % 1000000000;
+			
+			// Check if process terminated. 
+			if ( tempTerminate ) {
+				totalProcessesTerminated++;		// Increment counter.
+				bitVector[tempProcessIndex] = 0;	// Unset bit in bit vector.
+				
+				if ( keepWriting ) {
+					fprintf ( fp, "OSS: Process %d terminated at %d:%d.\n", tempProcessIndex, 
+						shmClock[0], shmClock[1] );
+					numberOfLines++;
+				}
+			} else { 
+				// Put the child process's pid the appropriate queue.
+				if ( keepWriting ) {
+					fprintf ( fp, "OSS: Placing process PID %d (High priority) back in queue 1 at time %d:%d.\n", 
+					 childPid, shmClock[0], shmClock[1] );
+					numberOfLines++;
+				}
+				enqueue ( highPriorityQueue, childPid );
+			}
 		} // End of checking low priority queue
 		else {
 			if ( keepWriting ) {
