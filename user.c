@@ -8,7 +8,6 @@ const unsigned int baseQuantum = 50000;
 
 int main ( int argc, char *argv[] ) {
 	/* General Variables */
-	int i, j;				// Loop index variables.
 	int myPid = getpid();			// Store process ID.
 	long ossPid = getppid();		// Store parent process ID.
 	int tableIndex = atoi ( argv[1] );	// Store process control block index passed from OSS. 
