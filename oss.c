@@ -24,10 +24,10 @@ int front ( Queue* queue );
 int rear ( Queue* queue );
 
 // Other functions
-bool roomForProcess ( int arr[] );
-int findIndex ( int arr[] );
+bool roomForProcess ( int size, int arr[] );
+int findIndex ( int size, int arr[] );
 bool timeForNewProcess ( unsigned int systemClock[], unsigned int nextProcessTimer );
-void cleanUpResources();
+void cleanUpResources( void );
 
 /* Global Variables */
 const int maxCurrentProcesses = 18;	// Controls how many child processes are allowed to be alive at the same time
@@ -164,7 +164,7 @@ int main ( int argc, char *argv[] ) {
 		// Check to see if the simulated system clock has passed the time for the next process to be created and
 		//	if there is room for a new process at this time. If both are true, change createProcess flag to 
 		//	true. Then set a new time for the next process to be created. 
-		if ( timeForNewProcess ( shmClock, nextProcessTimer ) && roomForProcess ( bitVector ) ) {
+		if ( timeForNewProcess ( shmClock, nextProcessTimer ) && roomForProcess ( maxCurrentProcesses, bitVector ) ) {
 			createProcess = true;
 			rngTimer = ( rand() % ( 2 - 0 + 1 ) ) + 0; 
 			nextProcessTimer = rngTimer; 
@@ -174,7 +174,7 @@ int main ( int argc, char *argv[] ) {
 		// If the createProcess flag is set to true, OSS enters these branches first to create the new process
 		//	before it goes on to schedule anything. 
 		if ( createProcess ) {
-			tempBitVectorIndex = findIndex ( bitVector );
+			tempBitVectorIndex = findIndex ( maxCurrentProcesses, bitVector );
 			childPid = fork();
 			
 			// Check for failure to fork child process.
@@ -198,7 +198,7 @@ int main ( int argc, char *argv[] ) {
 			// In the parent process...
 			// Set the priority for newly created process.
 			rngPriority = ( rand() % ( 100 - 1 + 1 ) ) + 1;
-			if ( rngPriority >= 1 || rngPriority < 10 ) {
+			if ( rngPriority >= 1 && rngPriority < 10 ) {
 				processPriority = 1;	// High priority
 			} else {
 				processPriority = 0; 	// Low priority
@@ -248,7 +248,7 @@ int main ( int argc, char *argv[] ) {
 			}
 			
 			if ( keepWriting ) {
-				fprintf ( fp, "OSS: Dispatching Process %d from queue 1 at time %d:%d.\n", 
+				fprintf ( fp, "OSS: Dispatching Process %ld from queue 1 at time %d:%d.\n", 
 					 tempPid, shmClock[0], shmClock[1] );
 				numberOfLines++;
 			}
@@ -310,7 +310,7 @@ int main ( int argc, char *argv[] ) {
 			}
 			
 			if ( keepWriting ) {
-				fprintf ( fp, "OSS: Dispatching Process %d from queue 0 at time %d:%d.\n", 
+				fprintf ( fp, "OSS: Dispatching Process %ld from queue 0 at time %d:%d.\n", 
 					 tempPid, shmClock[0], shmClock[1] );
 				numberOfLines++;
 			}
@@ -391,10 +391,9 @@ int main ( int argc, char *argv[] ) {
 
 // Function to scan bit vector array to see if there is room for a new process to be added. Returns true if it 
 //	finds a 0 in the array. Returns false if there are no 0's in the array. 
-bool roomForProcess ( int arr[] ) {
+bool roomForProcess ( int size, int arr[] ) {
 	bool foundRoom = false;
 	int index; 
-	int size = sizeof ( arr );
 	for ( index = 0; index < size; ++ index ) {
 		if ( arr[index] == 0 ) {
 			foundRoom = true;
@@ -417,9 +416,8 @@ bool timeForNewProcess ( unsigned int systemClock[], unsigned int nextProcessTim
 }
 
 // Function to return the first available index in the bit vector.
-int findIndex ( int arr[] ) {
-	int index, i, size;
-	size = sizeof ( arr );
+int findIndex ( int size, int arr[] ) {
+	int index, i;
 	for ( i = 0; i < size; ++i ) {
 		if ( arr[i] != 0 ) {
 			index = i;
