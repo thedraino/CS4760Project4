@@ -1,2 +1,38 @@
 # CS4760Project4
 Operating Systems - Project 4 - Process Scheduler Simulation (Round Robin)
+
+This project is supposed to simulate an OS scheduling processes to run. oss.c serves as the operation system simulator (OSS). 
+When it creates a new process, it forks and execs the info into user.c which will represent a USER process. Each USER will 
+be assigned a priority of either high or low by OSS upon creation. Once processes are created, OSS will check the high priority
+queue and low priority queues (see code for actual logic) to see if any processes are ready to be dipatched. OSS will then 
+"schedule" a process by sending a message to that process telling it it has been dispatched. The USER then runs for a certain 
+amount of time (set time quantum or percentage of quantum). Once it has determined how long it ran and/or if it terminated, it
+sends a message back to the waiting OSS to update it with what it did. OSS will continue this loop of checking if it can 
+create more processes, checking the queues, then scheduling a process until either time expires (2 seconds) or it has reached
+its created process limit (100 processes). It should be writing to a log file with each action that occurs to track progress. 
+
+Upon termination of processes, oss.c needs to clean up the shared memory and message queues that were used throughout the program. 
+
+Unfortunately, I have a bug that I am still working on that is causing a seg fault in my program. I think that all the logic is
+there, some index is just throwing things off or something. 
+
+As far as requirements for the project are concerned, these are the things that I have implemented: 
+- Makefile
+  - make and makeclean both work as specified
+- Log file
+- Code is well documented
+- oss.c
+  - uses shared memory correctly
+  - uses message queue corrently
+  - forks into user correctly
+  - signal handling
+- user.c
+  - uses shared memory correctly
+  - uses message queue correctly
+  - signal handling
+- Version control
+  - version control was consistently used
+  - log showing commit history is inluded in directory
+  
+  - However, the main requirement -- IT ACTUALLY WORKING -- is not met. I will continue to work on it. (So nobody try to steal this code
+  for your own project).
